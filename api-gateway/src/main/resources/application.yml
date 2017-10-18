@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+zuul:
+  routes:
+    auth-center:
+      path: /login/**
+      url: http://127.0.0.1:8081/
+      sensitiveHeaders: Cookie,Set-Cookie
+      stripPrefix: false
+    backend-service:
+      path: /backend/**
+      url: http://127.0.0.1:8082/
+
+shuaicj.security.jwt.secret: otherpeopledontknowit
