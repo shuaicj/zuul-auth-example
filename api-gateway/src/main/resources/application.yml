@@ -12,4 +12,5 @@ zuul:
       path: /backend/**
       url: http://127.0.0.1:8082/
 
-shuaicj.security.jwt.secret: otherpeopledontknowit
+# MUST be 128 bits
+shuaicj.security.jwt.secret: othersdontknowit

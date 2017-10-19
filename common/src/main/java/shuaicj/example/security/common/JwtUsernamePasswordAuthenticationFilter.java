@@ -11,8 +11,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.DirectEncrypter;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -54,15 +65,37 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
     protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
         Instant now = Instant.now();
-        String token = Jwts.builder()
-                .setSubject(auth.getName())
-                .claim("authorities", auth.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(now.plusSeconds(config.getExpiration())))
-                .signWith(SignatureAlgorithm.HS256, config.getSecret())
-                .compact();
-        rsp.addHeader(config.getHeader(), config.getPrefix() + " " + token);
+
+        try {
+            JWSSigner signer = new MACSigner((config.getSecret() + config.getSecret()).getBytes());
+
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                    .subject(auth.getName())
+                    .claim("authorities", auth.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                    .issueTime(Date.from(now))
+                    .expirationTime(Date.from(now.plusSeconds(config.getExpiration())))
+                    .build();
+
+            SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
+
+            signedJWT.sign(signer);
+
+            JWEObject jweObject = new JWEObject(
+                    new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A128GCM)
+                            .contentType("JWT") // required to signal nested JWT
+                            .build(),
+                    new Payload(signedJWT));
+
+            jweObject.encrypt(new DirectEncrypter(config.getSecret().getBytes()));
+
+            String token = jweObject.serialize();
+
+            rsp.addHeader(config.getHeader(), config.getPrefix() + " " + token);
+        // } catch (JOSEException e) {
+        } catch (JOSEException e) {
+            throw new IOException(e);
+        }
     }
 
     @Getter

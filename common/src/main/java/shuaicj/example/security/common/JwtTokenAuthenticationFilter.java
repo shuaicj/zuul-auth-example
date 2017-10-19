@@ -9,8 +9,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.crypto.DirectDecrypter;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,18 +39,21 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && token.startsWith(config.getPrefix() + " ")) {
             token = token.replace(config.getPrefix() + " ", "");
             try {
-                Claims claims = Jwts.parser()
-                        .setSigningKey(config.getSecret())
-                        .parseClaimsJws(token)
-                        .getBody();
-                String username = claims.getSubject();
-                Instant expireAt = claims.getExpiration().toInstant();
-                @SuppressWarnings("unchecked")
-                List<String> authorities = claims.get("authorities", List.class);
-                if (username != null && Instant.now().isBefore(expireAt)) {
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null,
-                            authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                JWEObject jweObject = JWEObject.parse(token);
+                jweObject.decrypt(new DirectDecrypter(config.getSecret().getBytes()));
+                SignedJWT signedJWT = jweObject.getPayload().toSignedJWT();
+
+                if (signedJWT.verify(new MACVerifier((config.getSecret() + config.getSecret()).getBytes()))) {
+                    JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+                    String username = claims.getSubject();
+                    Instant expireAt = claims.getExpirationTime().toInstant();
+                    @SuppressWarnings("unchecked")
+                    List<String> authorities = claims.getStringListClaim("authorities");
+                    if (username != null && Instant.now().isBefore(expireAt)) {
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null,
+                                authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
                 }
             } catch (Exception ignore) {
                 SecurityContextHolder.clearContext();
