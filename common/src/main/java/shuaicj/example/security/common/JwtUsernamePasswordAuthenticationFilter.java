@@ -60,7 +60,7 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
                         .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(config.getExpiration())))
-                .signWith(SignatureAlgorithm.HS256, config.getSecret())
+                .signWith(SignatureAlgorithm.HS256, config.getSecret().getBytes())
                 .compact();
         rsp.addHeader(config.getHeader(), config.getPrefix() + " " + token);
     }

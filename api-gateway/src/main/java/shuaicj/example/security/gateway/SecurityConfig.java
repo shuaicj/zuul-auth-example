@@ -27,6 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public JwtAuthenticationConfig jwtConfig() {
         return new JwtAuthenticationConfig();
     }
+
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
