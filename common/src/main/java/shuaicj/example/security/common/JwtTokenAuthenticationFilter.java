@@ -1,7 +1,6 @@
 package shuaicj.example.security.common;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.FilterChain;
@@ -41,10 +40,9 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                         .parseClaimsJws(token)
                         .getBody();
                 String username = claims.getSubject();
-                Instant expireAt = claims.getExpiration().toInstant();
                 @SuppressWarnings("unchecked")
                 List<String> authorities = claims.get("authorities", List.class);
-                if (username != null && Instant.now().isBefore(expireAt)) {
+                if (username != null) {
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null,
                             authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
                     SecurityContextHolder.getContext().setAuthentication(auth);
