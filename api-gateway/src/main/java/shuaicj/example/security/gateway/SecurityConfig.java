@@ -13,7 +13,7 @@ import shuaicj.example.security.common.JwtAuthenticationConfig;
 import shuaicj.example.security.common.JwtTokenAuthenticationFilter;
 
 /**
- * Test simple http authentication.
+ * Config role-based auth.
  *
  * @author shuaicj 2017/10/18
  */

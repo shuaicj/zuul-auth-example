@@ -14,7 +14,7 @@ import shuaicj.example.security.common.JwtAuthenticationConfig;
 import shuaicj.example.security.common.JwtUsernamePasswordAuthenticationFilter;
 
 /**
- * Test simple http authentication.
+ * Config login authentication.
  *
  * @author shuaicj 2017/10/18
  */
