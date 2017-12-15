@@ -1,11 +1,15 @@
-# zuul-authentication-example
-Use Zuul and Spring Security for a global authentication via the popular `JWT` token.
+# Zuul Auth Example
+
+Use Zuul and Spring Security for a global authentication via the popular
+[JWT](https://jwt.io/introduction/) token.
 
 #### Modules
+
 ##### 1. **auth-center**
 The service to issue the `JWT` token.
 - The client POST `{username,password}` to `/login`.
-- This service will authenticate the username and password via `Spring Security`, generate the token, and issue it to client.
+- This service will authenticate the username and password via `Spring Security`,
+  generate the token, and issue it to client.
 
 ##### 2. **backend-service**
 Provide three simple services:
