@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -54,7 +53,7 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse rsp)
-            throws AuthenticationException, IOException, ServletException {
+            throws AuthenticationException, IOException {
         User u = mapper.readValue(req.getInputStream(), User.class);
         return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(
                 u.getUsername(), u.getPassword(), Collections.emptyList()
@@ -63,7 +62,7 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
 
     @Override
     protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain,
-                                            Authentication auth) throws IOException, ServletException {
+                                            Authentication auth) throws IOException {
         Instant now = Instant.now();
 
         try {
@@ -92,7 +91,6 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
             String token = jweObject.serialize();
 
             rsp.addHeader(config.getHeader(), config.getPrefix() + " " + token);
-        // } catch (JOSEException e) {
         } catch (JOSEException e) {
             throw new IOException(e);
         }
