@@ -1,6 +1,7 @@
 package shuaicj.example.security.backend;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -12,18 +13,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class BackendController {
 
     @GetMapping("/admin")
-    public String admin() {
-        return "Hello Admin!";
+    public String admin(@RequestHeader("X-Username") String username) {
+        return "Hello Admin: " + username + "!\n";
     }
 
     @GetMapping("/user")
-    public String user() {
-        return "Hello User!";
+    public String user(@RequestHeader("X-Username") String username) {
+        return "Hello User: " + username + "!\n";
     }
 
     @GetMapping("/guest")
-    public String guest() {
-        return "Hello Guest!";
+    public String guest(@RequestHeader("X-Username") String username) {
+        return "Hello Guest: " + username + "!\n";
     }
 }
 
