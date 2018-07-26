@@ -11,5 +11,4 @@ zuul:
     backend-service:
       path: /backend/**
       url: http://127.0.0.1:8082/
-
-shuaicj.security.jwt.secret: otherpeopledontknowit
+      sensitiveHeaders: Cookie,Set-Cookie

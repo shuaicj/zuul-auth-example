@@ -1,4 +1,4 @@
-package shuaicj.example.security.gateway;
+package shuaicj.example.security.backend;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,9 +45,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                     .antMatchers(config.getUrl()).permitAll()
-                    .antMatchers("/backend/admin").hasRole("ADMIN")
-                    .antMatchers("/backend/user").hasRole("USER")
-                    .antMatchers("/backend/guest").permitAll();
+                    .antMatchers("/admin").hasRole("ADMIN")
+                    .antMatchers("/user").hasRole("USER")
+                    .antMatchers("/guest").permitAll();
     }
 }
 
