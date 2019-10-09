@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import shuaicj.example.security.common.JwtAuthenticationConfig;
 import shuaicj.example.security.common.JwtUsernamePasswordAuthenticationFilter;
@@ -30,9 +32,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         auth.inMemoryAuthentication()
-                .withUser("admin").password("admin").roles("ADMIN", "USER").and()
-                .withUser("shuaicj").password("shuaicj").roles("USER");
+                .withUser("admin").password(encoder.encode("admin")).roles("ADMIN", "USER").and()
+                .withUser("shuaicj").password(encoder.encode("shuaicj")).roles("USER");
     }
 
     @Override
